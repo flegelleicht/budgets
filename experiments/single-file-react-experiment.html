@@ -20,27 +20,28 @@
 
 		const e = React.createElement;
 
-		class LikeButton extends React.Component {
-		  constructor(props) {
-		    super(props);
-		    this.state = { liked: false };
-		  }
-
-		  render() {
-		    if (this.state.liked) {
-		      return 'You liked this.';
-		    }
-
-		    return e(
-		      'button',
-		      { onClick: () => this.setState({ liked: true }) },
-		      'Like'
-		    );
-		  }
+		class BudgetEntries extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = {
+					entries: ['A', 'B', 'C']
+				}
+			}
+			
+			render() {
+				return e(
+					'ul',
+					{ 
+						onClick: () => this.setState(
+							{ entries: [...this.state.entries, Math.random().toString(36).substring(2,7)]})
+					},
+					this.state.entries.map((x, idx) => e('li', { key: idx}, x))
+				);
+			}
 		}
 		
 		const domContainer = document.querySelector('#container');
-		ReactDOM.render(e(LikeButton), domContainer);
+		ReactDOM.render(e(BudgetEntries), domContainer);
 	</script>
 </body>
 </html>
