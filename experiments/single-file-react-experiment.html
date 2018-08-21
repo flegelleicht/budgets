@@ -20,11 +20,26 @@
 
 		const e = React.createElement;
 
+		const BudgetEntry = function(props) {
+			return e(
+				'li',
+				{},
+				[
+					e('p', {key: 'amnt'+props.id}, props.amount),
+					e('p', {key: 'titl'+props.id}, props.title),
+				]
+			);
+		}
+
 		class BudgetEntries extends React.Component {
 			constructor(props) {
 				super(props);
 				this.state = {
-					entries: ['A', 'B', 'C']
+					entries: [
+						{ id: 1, amount: -10.25, title: 'A' },
+						{ id: 2, amount: -5.67, title: 'B' },
+						{ id: 3, amount: -12.45, title: 'C' }
+					]
 				}
 			}
 			
@@ -33,9 +48,17 @@
 					'ul',
 					{ 
 						onClick: () => this.setState(
-							{ entries: [...this.state.entries, Math.random().toString(36).substring(2,7)]})
+							{ entries:
+									[...this.state.entries, {
+										id: this.state.entries.length,
+										amount: Math.floor(Math.random() * 10000) / 100,
+										title: Math.random().toString(36).substring(2,7)
+									}]
+							},
+						)
 					},
-					this.state.entries.map((x, idx) => e('li', { key: idx}, x))
+					this.state.entries.map(
+						(x, idx) => e(BudgetEntry, { ...x, key: idx} ))
 				);
 			}
 		}
