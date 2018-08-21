@@ -20,6 +20,61 @@
 
 		const e = React.createElement;
 		
+		class Budget extends React.Component {
+			constructor(props) {
+				super(props);
+				
+				this.state = {
+					total: 550.00,
+					remainingToday: 10.52,
+					spentToday: 25.47,
+					remainingTomorrow: 30.68,
+					spentTotal: 98.34,
+					entries: [
+						{ id: 1, amount: -10.25, title: 'A' },
+						{ id: 2, amount: -5.67, title: 'B' },
+						{ id: 3, amount: -12.45, title: 'C' }
+					]
+				};
+			}
+			
+			// onClick: () => this.setState(
+// 				{ entries:
+// 						[...this.state.entries, {
+// 							id: this.state.entries.length,
+// 							amount: Math.floor(Math.random() * 10000) / 100,
+// 							title: Math.random().toString(36).substring(2,7)
+// 						}]
+// 				},
+// 			)
+//
+			
+			render() {
+				return e(
+					'div',
+					{},
+					[
+						e(BudgetSummary,		{ key: 'summary' }),
+						e(BudgetEntryForm,	{ key: 'entryForm' }),
+						e(BudgetEntries,		{ key: 'entries', entries: this.state.entries, foo: 'bar', qaz: ['a'] })
+					]
+				);
+			}
+		}
+		
+		const BudgetSummary = function(props) {
+			return e(
+				'div',
+				{},
+				[
+					e('p', { key: 'remainingToday' }, '10,52'),
+					e('p', { key: 'spentToday' }, '25,47'),
+					e('p', { key: 'remainingTomorrow' }, '30,68'),
+					e('p', { key: 'spentTotal' }, '98,34'),
+				]
+			);
+		}
+				
 		class BudgetEntryForm extends React.Component {
 			constructor(props) {
 				super(props);
@@ -29,6 +84,7 @@
 				return e(
 					'form',
 					{
+						key: 'entryForm',
 						onSubmit: (evt) => { console.log("submit"); evt.preventDefault(); }
 					},
 					[
@@ -47,7 +103,6 @@
 								value: 'Eintragen'
 							}
 						),
-						e(BudgetEntries, { key: 'list'} )
 					]
 				);
 			}
@@ -64,42 +119,18 @@
 				]
 			);
 		}
-
-		class BudgetEntries extends React.Component {
-			constructor(props) {
-				super(props);
-				this.state = {
-					entries: [
-						{ id: 1, amount: -10.25, title: 'A' },
-						{ id: 2, amount: -5.67, title: 'B' },
-						{ id: 3, amount: -12.45, title: 'C' }
-					]
-				}
-			}
-			
-			render() {
-				return e(
-					'ul',
-					{ 
-						key: 'list',
-						onClick: () => this.setState(
-							{ entries:
-									[...this.state.entries, {
-										id: this.state.entries.length,
-										amount: Math.floor(Math.random() * 10000) / 100,
-										title: Math.random().toString(36).substring(2,7)
-									}]
-							},
-						)
-					},
-					this.state.entries.map(
-						(x, idx) => e(BudgetEntry, { ...x, key: idx} ))
-				);
-			}
+		
+		const BudgetEntries = function(props) {
+			return e(
+				'ul',
+				{},
+				props.entries.map(
+					(x, idx) => e(BudgetEntry, {...x, key: idx}))
+			);
 		}
 		
 		const domContainer = document.querySelector('#container');
-		ReactDOM.render(e(BudgetEntryForm), domContainer);
+		ReactDOM.render(e(Budget), domContainer);
 	</script>
 </body>
 </html>
