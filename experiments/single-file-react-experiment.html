@@ -36,26 +36,34 @@
 						{ id: 3, amount: -12.45, title: 'C' }
 					]
 				};
+				
+				this.addEntry = this.addEntry.bind(this);
 			}
-			
-			// onClick: () => this.setState(
-// 				{ entries:
-// 						[...this.state.entries, {
-// 							id: this.state.entries.length,
-// 							amount: Math.floor(Math.random() * 10000) / 100,
-// 							title: Math.random().toString(36).substring(2,7)
-// 						}]
-// 				},
-// 			)
-//
+
+			addEntry() {
+				this.setState(
+					{ entries:
+							[...this.state.entries, {
+								id: this.state.entries.length,
+								amount: Math.floor(Math.random() * 10000) / 100,
+								title: Math.random().toString(36).substring(2,7)
+							}]
+					},
+				)
+			}
 			
 			render() {
 				return e(
 					'div',
 					{},
 					[
-						e(BudgetSummary,		{ key: 'summary' }),
-						e(BudgetEntryForm,	{ key: 'entryForm' }),
+						e(BudgetSummary,		{
+							...this.state,
+							key: 'summary' 
+							}),
+						e(BudgetEntryForm,	{ 
+							key: 'entryForm',
+							handleAddEntry: this.addEntry }),
 						e(BudgetEntries,		{ key: 'entries', entries: this.state.entries, foo: 'bar', qaz: ['a'] })
 					]
 				);
@@ -67,10 +75,10 @@
 				'div',
 				{},
 				[
-					e('p', { key: 'remainingToday' }, '10,52'),
-					e('p', { key: 'spentToday' }, '25,47'),
-					e('p', { key: 'remainingTomorrow' }, '30,68'),
-					e('p', { key: 'spentTotal' }, '98,34'),
+					e('p', { key: 'remainingToday' }, props.remainingToday),
+					e('p', { key: 'spentToday' }, props.spentToday),
+					e('p', { key: 'remainingTomorrow' }, props.remainingTomorrow),
+					e('p', { key: 'spentTotal' }, props.spentTotal),
 				]
 			);
 		}
@@ -85,7 +93,10 @@
 					'form',
 					{
 						key: 'entryForm',
-						onSubmit: (evt) => { console.log("submit"); evt.preventDefault(); }
+						onSubmit: (evt) => { 
+							evt.preventDefault();
+							this.props.handleAddEntry();
+						}
 					},
 					[
 						e('input', 
