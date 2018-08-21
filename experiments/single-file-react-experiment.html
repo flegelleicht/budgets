@@ -18,6 +18,10 @@
 	<script>
 		'use strict';
 
+		const format = function(val) {
+			return Math.floor(val * 100) / 100
+		}
+
 		const e = React.createElement;
 		
 		class Budget extends React.Component {
@@ -25,31 +29,55 @@
 				super(props);
 				
 				this.state = {
-					total: 550.00,
+					total: 1000.00,
+					remainingDays: 10,
 					remainingToday: 10.52,
 					spentToday: 25.47,
 					remainingTomorrow: 30.68,
 					spentTotal: 98.34,
 					entries: [
-						{ id: 1, amount: -10.25, title: 'A' },
-						{ id: 2, amount: -5.67, title: 'B' },
-						{ id: 3, amount: -12.45, title: 'C' }
+						{ id: 1, amount: 0.0, title: 'A' },
+						{ id: 2, amount: 0.0, title: 'B' },
+						{ id: 3, amount: 0.0, title: 'C' }
 					]
 				};
-				
+						
 				this.addEntry = this.addEntry.bind(this);
 			}
+			
+			componentDidMount() {
+				this.calculate();
+			}
+			
+			calculate() {
+				const sumAmounts = (acc, cur) => acc + cur.amount;
+				
+				let spentTotal = this.state.entries.reduce(sumAmounts, 0);
+				let spentToday = this.state.entries.filter(x => x.id > 3).reduce(sumAmounts, 0);
+				console.log(spentToday);
+					
+				let remainingToday = (this.state.total - Math.abs(spentTotal) + Math.abs(spentToday)) / this.state.remainingDays - Math.abs(spentToday);
 
-			addEntry() {
+				let remainingTomorrow = ((this.state.total - Math.abs(spentTotal)) / (this.state.remainingDays - 1));
+
+				this.setState({
+					spentTotal: spentTotal,
+					spentToday: spentToday,
+					remainingToday: remainingToday,
+					remainingTomorrow: remainingTomorrow
+				});
+			}
+
+			addEntry(val) {
 				this.setState(
 					{ entries:
 							[...this.state.entries, {
-								id: this.state.entries.length,
-								amount: Math.floor(Math.random() * 10000) / 100,
+								id: this.state.entries.length + 1,
+								amount: val, //format(Math.random() * 100),
 								title: Math.random().toString(36).substring(2,7)
 							}]
 					},
-				)
+					() => this.calculate());
 			}
 			
 			render() {
@@ -57,14 +85,15 @@
 					'div',
 					{},
 					[
-						e(BudgetSummary,		{
+						e(BudgetSummary, {
 							...this.state,
-							key: 'summary' 
-							}),
-						e(BudgetEntryForm,	{ 
+							key: 'summary'}),
+						e(BudgetEntryForm, { 
 							key: 'entryForm',
 							handleAddEntry: this.addEntry }),
-						e(BudgetEntries,		{ key: 'entries', entries: this.state.entries, foo: 'bar', qaz: ['a'] })
+						e(BudgetEntries, { 
+							key: 'entries', 
+							entries: this.state.entries })
 					]
 				);
 			}
@@ -75,10 +104,16 @@
 				'div',
 				{},
 				[
-					e('p', { key: 'remainingToday' }, props.remainingToday),
-					e('p', { key: 'spentToday' }, props.spentToday),
-					e('p', { key: 'remainingTomorrow' }, props.remainingTomorrow),
-					e('p', { key: 'spentTotal' }, props.spentTotal),
+					e('p', { key: 'remainingToday' }, 
+						['übrig: ', props.remainingToday]),
+					e('p', { key: 'spentToday' }, 
+						['heute ausgegeben: ', props.spentToday]),
+					e('p', { key: 'remainingTomorrow' }, 	
+						['morgen übrig: ', props.remainingTomorrow]),
+					e('p', { key: 'spentTotal' }, 
+						['insgesamt ausgegeben: ', props.spentTotal]),
+					e('p', { key: 'available' }, 
+						['insgesamt verfügbar: ', props.total]),
 				]
 			);
 		}
@@ -95,16 +130,16 @@
 						key: 'entryForm',
 						onSubmit: (evt) => { 
 							evt.preventDefault();
-							this.props.handleAddEntry();
+							this.props.handleAddEntry(+document.getElementById('entryInput').value);
 						}
 					},
 					[
 						e('input', 
 							{ 
 								key: 'input', 
+								id: 'entryInput',
 								type: 'number', 
-								defaultValue: "0.00", step: "0.01",
-								onChange: () => { console.log("change"); }
+								defaultValue: "-10.00", step: "10",
 							}
 						),
 						e('input', 
@@ -124,6 +159,8 @@
 				'li',
 				{},
 				[
+					e('span', {key: 'id'+props.id}, props.id),
+					' ',
 					e('span', {key: 'amnt'+props.id}, props.amount),
 					' ',
 					e('span', {key: 'titl'+props.id}, props.title),
