@@ -19,14 +19,48 @@
 		'use strict';
 
 		const e = React.createElement;
+		
+		class BudgetEntryForm extends React.Component {
+			constructor(props) {
+				super(props);
+			}
+			
+			render() {
+				return e(
+					'form',
+					{
+						onSubmit: (evt) => { console.log("submit"); evt.preventDefault(); }
+					},
+					[
+						e('input', 
+							{ 
+								key: 'input', 
+								type: 'number', 
+								defaultValue: "0.00", step: "0.01",
+								onChange: () => { console.log("change"); }
+							}
+						),
+						e('input', 
+							{ 
+								key: 'submit',
+								type: 'submit',
+								value: 'Eintragen'
+							}
+						),
+						e(BudgetEntries, { key: 'list'} )
+					]
+				);
+			}
+		}
 
 		const BudgetEntry = function(props) {
 			return e(
 				'li',
 				{},
 				[
-					e('p', {key: 'amnt'+props.id}, props.amount),
-					e('p', {key: 'titl'+props.id}, props.title),
+					e('span', {key: 'amnt'+props.id}, props.amount),
+					' ',
+					e('span', {key: 'titl'+props.id}, props.title),
 				]
 			);
 		}
@@ -47,6 +81,7 @@
 				return e(
 					'ul',
 					{ 
+						key: 'list',
 						onClick: () => this.setState(
 							{ entries:
 									[...this.state.entries, {
@@ -64,7 +99,7 @@
 		}
 		
 		const domContainer = document.querySelector('#container');
-		ReactDOM.render(e(BudgetEntries), domContainer);
+		ReactDOM.render(e(BudgetEntryForm), domContainer);
 	</script>
 </body>
 </html>
