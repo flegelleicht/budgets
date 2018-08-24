@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Budgets</title>
+  <base href="/">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+	<div id="container">
+	</div>
+	
+	<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+	<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+
+	<script>
+		'use strict';
+
+		const format = function(val) {
+			return Math.floor(val * 100) / 100
+		}
+
+		const e = React.createElement;
+		
+		class Budget extends React.Component {
+			constructor(props) {
+				super(props);
+				
+				this.state = {
+					total: 1000.00,
+					remainingDays: 10.0,
+					remainingToday: 0.0,
+					spentToday: 0.00,
+					remainingTomorrow: 0.0,
+					spentTotal: 0.0,
+					entries: [
+						{ id: 1, amount: 0.0, title: 'A' },
+						{ id: 2, amount: 0.0, title: 'B' },
+						{ id: 3, amount: 0.0, title: 'C' }
+					]
+				};
+						
+				this.addEntry = this.addEntry.bind(this);
+			}
+			
+			componentDidMount() {
+				this.calculate();
+			}
+			
+			calculate() {
+				const sumAmounts = (acc, cur) => acc + cur.amount;
+				
+				let spentTotal = this.state.entries.reduce(sumAmounts, 0);
+				let spentToday = this.state.entries.filter(x => x.id > 3).reduce(sumAmounts, 0);
+				console.log(spentToday);
+					
+				let remainingToday = (this.state.total - Math.abs(spentTotal) + Math.abs(spentToday)) / this.state.remainingDays - Math.abs(spentToday);
+
+				let remainingTomorrow = ((this.state.total - Math.abs(spentTotal)) / (this.state.remainingDays - 1));
+
+				this.setState({
+					spentTotal: spentTotal,
+					spentToday: spentToday,
+					remainingToday: remainingToday,
+					remainingTomorrow: remainingTomorrow
+				});
+			}
+
+			addEntry(val) {
+				this.setState(
+					{ entries:
+							[...this.state.entries, {
+								id: this.state.entries.length + 1,
+								amount: val, //format(Math.random() * 100),
+								title: Math.random().toString(36).substring(2,7)
+							}]
+					},
+					() => this.calculate());
+			}
+			
+			render() {
+				return e(
+					'div',
+					{},
+					[
+						e(BudgetSummary, {
+							...this.state,
+							key: 'summary'}),
+						e(BudgetEntryForm, { 
+							key: 'entryForm',
+							handleAddEntry: this.addEntry }),
+						e(BudgetEntries, { 
+							key: 'entries', 
+							entries: this.state.entries })
+					]
+				);
+			}
+		}
+		
+		const BudgetSummary = function(props) {
+			return e(
+				'div',
+				{},
+				[
+					e('p', { key: 'remainingToday' }, 
+						['übrig: ', props.remainingToday]),
+					e('p', { key: 'spentToday' }, 
+						['heute ausgegeben: ', props.spentToday]),
+					e('p', { key: 'remainingTomorrow' }, 	
+						['morgen übrig: ', props.remainingTomorrow]),
+					e('p', { key: 'spentTotal' }, 
+						['insgesamt ausgegeben: ', props.spentTotal]),
+					e('p', { key: 'available' }, 
+						['insgesamt verfügbar: ', props.total]),
+				]
+			);
+		}
+				
+		class BudgetEntryForm extends React.Component {
+			constructor(props) {
+				super(props);
+			}
+			
+			render() {
+				return e(
+					'form',
+					{
+						key: 'entryForm',
+						onSubmit: (evt) => { 
+							evt.preventDefault();
+							this.props.handleAddEntry(+document.getElementById('entryInput').value);
+						}
+					},
+					[
+						e('input', 
+							{ 
+								key: 'input', 
+								id: 'entryInput',
+								type: 'number', 
+								defaultValue: "-10.00", step: "10",
+							}
+						),
+						e('input', 
+							{ 
+								key: 'submit',
+								type: 'submit',
+								value: 'Eintragen'
+							}
+						),
+					]
+				);
+			}
+		}
+
+		const BudgetEntry = function(props) {
+			return e(
+				'li',
+				{},
+				[
+					e('span', {key: 'id'+props.id}, props.id),
+					' ',
+					e('span', {key: 'amnt'+props.id}, props.amount),
+					' ',
+					e('span', {key: 'titl'+props.id}, props.title),
+				]
+			);
+		}
+		
+		const BudgetEntries = function(props) {
+			return e(
+				'ul',
+				{},
+				props.entries.map(
+					(x, idx) => e(BudgetEntry, {...x, key: idx}))
+			);
+		}
+		
+		const domContainer = document.querySelector('#container');
+		ReactDOM.render(e(Budget), domContainer);
+	</script>
+</body>
+</html>
